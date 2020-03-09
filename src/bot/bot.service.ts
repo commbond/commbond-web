@@ -37,6 +37,6 @@ export class BotService {
 
   @TelegramActionHandler({ message: '' })
   async reply(ctx: ContextMessageUpdate) {
-    await ctx.reply(`You say ${ctx.message.text}`)
+    await ctx.reply(`You say "${ctx.message.text}".`)
   }
 }
