@@ -32,6 +32,9 @@
 
 ```bash
 $ npm install
+
+//or use yarn, also for any commands below
+$ yarn install
 ```
 
 ## Running the app
