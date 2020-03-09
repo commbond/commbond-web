@@ -11,32 +11,51 @@ export class BotService {
     private readonly telegrafTelegramService: TelegrafTelegramService,
   ) { }
 
+  /* This decorator handle /start command */
   @TelegramActionHandler({ onStart: true })
-  async start(ctx: ContextMessageUpdate) {
+  async onStart(ctx: ContextMessageUpdate) {
     const me = await this.telegrafTelegramService.getMe();
     console.log(me);
-    await ctx.replyWithMarkdown('test', {
+    await ctx.replyWithMarkdown(`Welcome to CommBond\!\nWhat would you like to do\?\n\n/browseIdeas - Browse recent hottest ideas\n/submitIdeas - You have an idea? Throw it out!`, {
       reply_markup: {
-        inline_keyboard: [
+        // inline_keyboard: [
+        //   [
+        //     {
+        //       text: 'Browse ideas',
+        //       callback_data: 'browseIdeas',
+        //     },
+        //     {
+        //       text: 'Submit ideas',
+        //       callback_data: 'submitIdeas',
+        //     },
+        //   ],
+        // ],
+        one_time_keyboard: true,
+        resize_keyboard: true,
+        keyboard: [
           [
             {
-              text: 'test',
-              callback_data: 'test_callback',
+              text: 'Browse ideas',
             },
           ],
+          [
+            {
+              text: 'Submit ideas',
+            }
+          ]
         ]
       },
       parse_mode: 'Markdown',
     });
   }
 
-  @TelegramActionHandler({ action: 'test_callback' })
-  protected async debugLogs(ctx: ContextMessageUpdate) {
-    console.log('1');
+  @TelegramActionHandler({ action: 'browseIdeas' })
+  protected async onAction(ctx: ContextMessageUpdate) {
+    console.log('Action: browseIdeas');
   }
 
   @TelegramActionHandler({ message: '' })
-  async reply(ctx: ContextMessageUpdate) {
+  async onMessage(ctx: ContextMessageUpdate) {
     await ctx.reply(`You say "${ctx.message.text}".`)
   }
 }
