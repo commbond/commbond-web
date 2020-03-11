@@ -25,6 +25,7 @@
     "@nestjs/config": "^0.2.4",
     "@nestjs/core": "^6.10.14",
     "@nestjs/platform-express": "^6.10.14",
+    "airtable": "^0.8.1",
     "nestjs-telegraf": "^0.7.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.0",
