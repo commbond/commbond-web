@@ -97,7 +97,6 @@ ${BotService.escapeForMarkdownV2(record.fields['Allowed Actions'])}
 
   @TelegramActionHandler({ action: /respondIdea/ })
   protected async onRespondIdea(ctx: ContextMessageUpdate) {
-    console.log(ctx.update.callback_query.data);
     const parts = ctx.update.callback_query.data.split(' ');
     console.log('repondIdea with idx: ' + parts[1] + parts[2]);
 
