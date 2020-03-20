@@ -35,7 +35,7 @@ export class BotService {
 
   //@future Put database logic in a separte lib module
   // Not sure how to handle dependency injection here.. /Gigi
-  static createDb() {
+  protected createDb() {
     const airtableBase = new Airtable({apiKey: process.env.AIRTABLE_API_KEY}).base('appUW06bs08YxzVDM');
     return airtableBase;
   }
@@ -49,15 +49,66 @@ export class BotService {
   }
 
   //@future Put these UI-relating stuff under a UI module
+  protected replyDefaultMenu(ctx: ContextMessageUpdate, isGreeting?: boolean) {
+    const message = 
+`${isGreeting ? '歡迎你 come 幫！' : 'Sorry, 我唔係好明。'}
+你想做咩？
+
+/browseideas - 睇今期 Top ideas！
+/submitidea - 有 idea? 出橋啦`;
+    ctx.reply(BotService.escapeForMarkdownV2(message), {
+      parse_mode: 'MarkdownV2',
+      reply_markup: BotService.makeMainMenuKeyboard(),
+    });
+
+  }
+
+  protected replyIdeaListing(ctx: ContextMessageUpdate, records) {
+    const strRecords = records.reduce((acc, record, idx) => {
+      const strRecord = 
+`${idx + 1}\\. 【${BotService.escapeForMarkdownV2(record.fields['Idea Title'])}】
+💪${record.fields['Participation Count']} 人參與
+📍${BotService.escapeForMarkdownV2(record.fields['Target Location'])}
+${BotService.makeIdeaStatement(record.fields)}
+
+`;
+      return acc + strRecord;
+    }, '');
+
+    const fullMessage = 
+`今期 Top Ideas
+${strRecords}想參與或支持？點擊以下的連結查看更多。
+
+你有 idea? 
+/submitidea \\- 出橋啦！
+`;
+
+    const actionArr = records.map((record, idx) => {
+      return [{
+        text: `查看詳情 ${idx + 1}.【${BotService.escapeForMarkdownV2(record.fields['Idea Title'])}】`,
+        callback_data: `/getidea ${record.id}`,
+      }];
+    });
+
+    ctx.replyWithMarkdown(fullMessage, {
+      parse_mode: 'MarkdownV2',
+      reply_markup: {
+        inline_keyboard: actionArr
+      },
+    });
+
+    ctx.updateType === 'callback_query' && ctx.answerCbQuery();
+  } 
+
   static makeMainMenuKeyboard() {
     const keyboard = [
       [{
-        text: '睇今期 Top ideas！',
-        callback_data: '/browseIdeas',
+        text: '睇今期 Top Ideas！',
+        callback_data: '/browseideas',
       }],
       [{
-        text: '有 idea? 出橋啦',
-        callback_data: '/submitIdea',
+        text: '有 Idea? 出橋啦',
+        callback_data: '/submitidea',
       }],
   
     ];
@@ -69,28 +120,48 @@ export class BotService {
       if(eachRec.fields['Action Type'] === 'Downvote') {
         return acc;
       }
-      return acc + `${eachRec.fields['Action Title']} - ${eachRec.fields['Count']} 人` + (selectedActionId === eachRec.id ?  ' (已選)' : '') + '\n';
+      const isSelected = selectedActionId === eachRec.id;
+      return acc + (isSelected ?  '*' : '') + `\n${BotService.escapeForMarkdownV2(eachRec.fields['Action Title'])} \\- ${eachRec.fields['Count']} 人` + (isSelected ?  ' \\(已選\\)*' : '');
     }, '');
 
     const strContent = 
-`【${ideaRecord.fields['Idea Title']}】
+`【${BotService.escapeForMarkdownV2(ideaRecord.fields['Idea Title'])}】
 💪已集合 ${ideaRecord.fields['Participation Count']} 名參與者
-📍${ideaRecord.fields['Target Location']}
-${ideaRecord.fields['Idea Statement']}
-    
-共有 ${ideaRecord.fields['Support Count']} 名支持者
-${BotService.escapeForMarkdownV2(strActionLines)}` +
-'\n\*' + (selectedActionId ? '你已回應。' : '你呢？幫定唔幫？') + '\*';
+📍${BotService.escapeForMarkdownV2(ideaRecord.fields['Target Location'])}
+
+${BotService.makeIdeaStatement(ideaRecord.fields)}
+`
++ (ideaRecord.fields['Event Date'] ? '\n日期：' + BotService.escapeForMarkdownV2(ideaRecord.fields['Event Date']) : '')
++ (ideaRecord.fields['Event Time'] ? '\n時間：' + BotService.escapeForMarkdownV2(ideaRecord.fields['Event Time']) : '') 
++ (ideaRecord.fields['Event Location'] ? '\n地點：' + BotService.escapeForMarkdownV2(ideaRecord.fields['Event Location']) : '')
++    
+`
+
+共有 ${ideaRecord.fields['Support Count']} 名支持者${strActionLines}`
++ (ideaRecord.fields['Actions Details'] ? '\n\n💪參與行動詳釋：\n' + BotService.escapeForMarkdownV2(ideaRecord.fields['Actions Details']) : '')
++ (ideaRecord.fields['Other Details'] ? '\n\n其他詳情：\n' + BotService.escapeForMarkdownV2(ideaRecord.fields['Other Details']) : '')
++ (ideaRecord.fields['Future Extension'] ? '\n\n將來延伸：\n' + BotService.escapeForMarkdownV2(ideaRecord.fields['Future Extension']) : '')
++ 
+`
+
+
+\*${selectedActionId ? '你已回應。' : '你呢？幫定唔幫？'}\*`;
 
     return strContent;
   }
+
+
+  static makeIdeaStatement(ideaFields) {
+    return `我們要設立 __${BotService.escapeForMarkdownV2(ideaFields['Idea - What'])}__ ，利用 __${BotService.escapeForMarkdownV2(ideaFields['Idea - How'])}__ ，令 __${BotService.escapeForMarkdownV2(ideaFields['Idea - Who'])}__ 可以解決 __${BotService.escapeForMarkdownV2(ideaFields['Idea - Why'])}__。`;
+  }
+
 
   static makeDetailsPageKeyboard(actionRecords, selectedActionId?) {
     const actionArr = actionRecords.map((eachAction) => {
       
       return [{
-        text: eachAction.fields['Action Title'] + (eachAction.id === selectedActionId ? ' (已選取)' : ''), //@todo: mark (已選取) if already selected by user
-        callback_data: `/respondIdea ${eachAction.id}`,
+        text: BotService.escapeForMarkdownV2(eachAction.fields['Action Title']) + (eachAction.id === selectedActionId ? ' (已選取)' : ''), //@todo: mark (已選取) if already selected by user
+        callback_data: `/respondidea ${eachAction.id}`,
       }];
     });
 
@@ -109,69 +180,35 @@ ${BotService.escapeForMarkdownV2(strActionLines)}` +
   /* This decorator handle /start command */
   @TelegramActionHandler({ onStart: true })
   async onStart(ctx: ContextMessageUpdate) {
-    const me = await this.telegrafTelegramService.getMe();
+    // const me = await this.telegrafTelegramService.getMe();
     // console.log(me);
-    const message = 
-`歡迎你 come 幫！
-你想做咩？
-
-/browseIdeas - 睇今期 Top ideas！
-/submitIdea - 有 idea? 出橋啦`;
-    await ctx.reply(BotService.escapeForMarkdownV2(message), {
-      parse_mode: 'MarkdownV2',
-      reply_markup: BotService.makeMainMenuKeyboard(),
-    });
+    await this.replyDefaultMenu(ctx, true);
   }
 
 
-  @TelegramActionHandler({ action: /^\/browseIdeas/ })
+  @TelegramActionHandler({ action: /^\/browseideas/ })
   protected async onBrowseIdeas(ctx: ContextMessageUpdate) {
-    const base = BotService.createDb();
+    const base = this.createDb();
+    const that = this;
     base('Ideas').select({
       view: 'Grid view',
-      pageSize: 10,
+      pageSize: 5,
+      filterByFormula: 'AND({Approval} = "Approved")',
+      sort: [{field: "Support Count", direction: "desc"}],
     }).firstPage(function(err, records) {
         if (err) { console.error(err); return; }
 
-        const strRecords = records.reduce((acc, record, idx) => {
-          const strRecord = 
-`${idx + 1}\\. 【${record.fields['Idea Title']}】
-💪${record.fields['Participation Count']} 人參與
-📍${record.fields['Target Location']}
-${record.fields['Idea Statement']}
-
-`;
-          return acc + strRecord;
-        }, '');
-
-        const fullMessage = 
-`今期 Top Ideas
-${strRecords}想參與或支持？點擊以下的連結查看更多。
-
-你有 idea? 
-/submitIdea \\- 出橋啦！
-`;
-
-        const actionArr = records.map((record, idx) => {
-          return [{
-            text: `查看更多 ${idx + 1}.【${record.fields['Idea Title']}】`,
-            callback_data: `/getIdea ${record.id}`,
-          }];
-        });
-
-        ctx.replyWithMarkdown(fullMessage, {
-          parse_mode: 'MarkdownV2',
-          reply_markup: {
-            inline_keyboard: actionArr
-          },
-        });
+        that.replyIdeaListing(ctx, records);
     });
   }
 
 
-  @TelegramActionHandler({ action: /^\/submitIdea/ })
+  @TelegramActionHandler({ action: /^\/submitidea/ })
   protected async onSubmitIdea(ctx: ContextMessageUpdate) {
-    await ctx.replyWithMarkdown(BotService.escapeForMarkdownV2(`（todo: 一些鼓勵出橋的說話）出橋這裹：https://airtable.com/shrYwXgCML9aN2dI3`), {
+    await ctx.replyWithMarkdown(BotService.escapeForMarkdownV2(
+`嘩！好啊！
+有橋出橋💡，有力出力💪！
+💡出橋這裹：https://airtable.com/shrYwXgCML9aN2dI3`), {
       parse_mode: 'MarkdownV2',
       reply_markup: {
         inline_keyboard: [[{
@@ -180,17 +217,18 @@ ${strRecords}想參與或支持？點擊以下的連結查看更多。
         }]]
       },
     });
+    await ctx.updateType === 'callback_query' && ctx.answerCbQuery(); 
   }
 
-  @TelegramActionHandler({ action: /^\/getIdea/ })
+  @TelegramActionHandler({ action: /^\/getidea/ })
   protected async onGetIdea(ctx: ContextMessageUpdate) {
     const parts = ctx.update.callback_query.data.split(' ');
     const ideaId = parts.length > 1 ? parts[1] : null;
-    console.log('getIdea with ID: ' + ideaId);
+    console.log('getidea with ID: ' + ideaId);
 
     // 1. Find Idea by by ID
-    const base = BotService.createDb();
-    base('Ideas').find(ideaId, function(err, record) {
+    const base = this.createDb();
+    await base('Ideas').find(ideaId, function(err, record) {
       if (err) { console.error(err); return; }
       
       //2. Fetch all Actions (with titles and type) of this idea
@@ -226,13 +264,14 @@ ${strRecords}想參與或支持？點擊以下的連結查看更多。
             //@todo, add param lastSelectedActionId
             reply_markup: BotService.makeDetailsPageKeyboard(actionRecords)
           });
-          ctx.answerCbQuery();
+          
+          ctx.updateType === 'callback_query' && ctx.answerCbQuery();
       });
       
     });
   }
 
-  @TelegramActionHandler({ action: /^\/respondIdea/ })
+  @TelegramActionHandler({ action: /^\/respondidea/ })
   protected async onRespondIdea(ctx: ContextMessageUpdate) {
     const callbackDataParts = ctx.update.callback_query.data.split(' ');
 
@@ -243,7 +282,7 @@ ${strRecords}想參與或支持？點擊以下的連結查看更多。
 
     ctx.editMessageReplyMarkup(BotService.makeLoadingKeyboard());
 
-    const base = BotService.createDb();
+    const base = this.createDb();
     //1. Fetch SelectedAction record 
     await base('Actions').find(selectedActionId, function(err, selectedActionRecord) {
       if (err) { console.error(err); return; }
@@ -330,7 +369,8 @@ ${strRecords}想參與或支持？點擊以下的連結查看更多。
                       // reply_markup: BotService.makeDetailsPageKeyboard(actionRecords, selectedActionId)
                       reply_markup: BotService.makeMainMenuKeyboard(),
                     });
-                    ctx.answerCbQuery('多謝回應！');
+                    
+                    ctx.updateType === 'callback_query' && ctx.answerCbQuery('多謝回應！');
                   });
                 });
       
@@ -350,15 +390,15 @@ ${strRecords}想參與或支持？點擊以下的連結查看更多。
   @TelegramActionHandler({ message: '' })
   async onMessage(ctx: ContextMessageUpdate) {
     switch (ctx.message.text ) {
-      case '/browseIdeas':
+      case '/browseideas':
         this.onBrowseIdeas(ctx);
         break;
-      case '/submitIdea':
-      case '/submitIdeas':
+      case '/submitidea':
+      case '/submitideas':
         this.onSubmitIdea(ctx);
         break;
       default:
-        await ctx.reply(`You say "${ctx.message.text}".`)
+        await this.replyDefaultMenu(ctx);
 
     }
   }
