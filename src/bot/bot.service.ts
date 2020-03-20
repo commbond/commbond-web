@@ -205,6 +205,8 @@ ${BotService.makeIdeaStatement(ideaRecord.fields)}
 
   @TelegramActionHandler({ action: /^\/submitidea/ })
   protected async onSubmitIdea(ctx: ContextMessageUpdate) {
+    //@future Create User here
+
     await ctx.replyWithMarkdown(BotService.escapeForMarkdownV2(
 `嘩！好啊！
 有橋出橋💡，有力出力💪！
@@ -243,18 +245,7 @@ ${BotService.makeIdeaStatement(ideaRecord.fields)}
       }).firstPage(function(err, actionRecords) {
           if (err) { console.error(err); return; }
           
-          // console.log(ctx.update);
-          // const userId = 123;
-          // const selectedActionId = actionRecords.find((eachAction) => {
-          //   // rec.fields['By Users']
-
-          //   const supportersId = eachAction.fields['By Users'] || [];
-          //   return supportersId.find((eachSupporterId) => {
-          //     console.log(eachSupporterId);
-          //     return eachSupporterId === userId;
-          //   });
-
-          // });
+          //@future: EditResponse - show current user's selected action
 
           // console.log('selectedActionId: ');
           // console.log(selectedActionId);
@@ -276,8 +267,8 @@ ${BotService.makeIdeaStatement(ideaRecord.fields)}
     const callbackDataParts = ctx.update.callback_query.data.split(' ');
 
     const selectedActionId = callbackDataParts[1];
-    // console.log("ctx callback_query :");
-    // console.log(ctx.update.callback_query);
+    console.log("ctx callback_query :");
+    console.log(ctx.update.callback_query);
     const user = ctx.update.callback_query.from;
 
     ctx.editMessageReplyMarkup(BotService.makeLoadingKeyboard());
@@ -287,27 +278,33 @@ ${BotService.makeIdeaStatement(ideaRecord.fields)}
     await base('Actions').find(selectedActionId, function(err, selectedActionRecord) {
       if (err) { console.error(err); return; }
 
-      console.log('selected Action below:');
-      console.log(selectedActionRecord.fields);
+      // console.log('selected Action below:');
+      // console.log(selectedActionRecord.fields);
       const ideaId = selectedActionRecord.fields['On Idea'][0];
       const existingSupporters = selectedActionRecord.fields['By Users'] || [];
  
       //2. Check if user exists, otherwise registers user
       base('Users').select({
         view: 'Grid view',
-        filterByFormula: `{Username} = '${user.username}'`,
+        filterByFormula: `{User Id} = '${user.id}'`, //use user id here as username might change
       }).firstPage(function(err, userRecs) {
           if (err) { console.error(err); return; }
   
           let userRecord;
           if (userRecs.length === 0) {
             // Create user record here
-  
+            base('Users').create({
+              "Username": user.username,
+              "User Id": String(user.id),
+            }, {typecast: true}, function(err, record) {
+              if (err) { console.error(err); return; }
+
+              userRecord = record;
+            });
           } else {
             userRecord = userRecs[0];
           }
-          // console.log(userRecord);
-
+          // console.log(userRecord);        
 
           //3. Fetch all sibling Actions 
           base('Ideas').find(ideaId, function(err, ideaRecord) {
