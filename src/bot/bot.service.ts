@@ -54,13 +54,31 @@ export class BotService {
 `${isGreeting ? '歡迎你 come 幫！' : 'Sorry, 我唔係好明。'}
 你想做咩？
 
-/browseideas - 睇今期 Top ideas！
-/submitidea - 有 idea? 出橋啦`;
+/browseideas - 睇今期 Top Ideas！
+/submitidea - 有 Idea? 出橋啦`;
     ctx.reply(BotService.escapeForMarkdownV2(message), {
       parse_mode: 'MarkdownV2',
       reply_markup: BotService.makeMainMenuKeyboard(),
     });
 
+  }
+
+  protected replyHelpMenu(ctx: ContextMessageUpdate) {
+    const message = 
+`CommBond - Community Bonding. 
+一個社區實驗平台，連結社區持份者、同路人共創共享互助生活社區。
+
+你可以透過 CommBond bot /browseideas 瀏覽平台上民間發起的社區 Ideas，然後作出回應或支持。你也可以 /submitidea 出橋上 CommBond 平台，在社區發起實驗，召集同路人用行動支持你的 Idea。
+
+你想做咩？
+/browseideas \- 睇今期 Top ideas！
+/submitidea \- 有 Idea? 出橋啦
+
+有其他疑問或意見？歡迎聯絡我們的人類：@CommBond`;
+    ctx.reply(BotService.escapeForMarkdownV2(message), {
+      parse_mode: 'MarkdownV2',
+      reply_markup: BotService.makeMainMenuKeyboard(),
+    });
   }
 
   protected replyIdeaListing(ctx: ContextMessageUpdate, records) {
@@ -393,6 +411,9 @@ ${BotService.makeIdeaStatement(ideaRecord.fields)}
       case '/submitidea':
       case '/submitideas':
         this.onSubmitIdea(ctx);
+        break;
+      case '/help':
+        await this.replyHelpMenu(ctx);
         break;
       default:
         await this.replyDefaultMenu(ctx);
