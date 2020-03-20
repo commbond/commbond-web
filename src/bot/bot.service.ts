@@ -160,7 +160,7 @@ ${BotService.makeIdeaStatement(ideaRecord.fields)}
     const actionArr = actionRecords.map((eachAction) => {
       
       return [{
-        text: BotService.escapeForMarkdownV2(eachAction.fields['Action Title']) + (eachAction.id === selectedActionId ? ' (已選取)' : ''), //@todo: mark (已選取) if already selected by user
+        text: eachAction.fields['Action Title'] + (eachAction.id === selectedActionId ? ' (已選取)' : ''), //@todo: mark (已選取) if already selected by user
         callback_data: `/respondidea ${eachAction.id}`,
       }];
     });
