@@ -123,8 +123,8 @@ const makeAction = async ({ user, selectedActionId }) => {
       ...idea.record,
       fields: {
         ...idea.record.fields,
-        'Participation Count': updatedRecord && updatedRecord.fields && updatedRecord.fields['Action Type'] === 'Participate' ? idea.record.fields['Participation Count'] + 1 : idea.record.fields['Participation Count'],
-        'Support Count': updatedRecord && updatedRecord.fields && updatedRecord.fields['Action Type'] !== 'Downvote' ? idea.record.fields['Support Count'] + 1 : idea.record.fields['Support Count'],
+        'Participation Count': updatedRecord &&  updatedRecord.hasOwnProptery('fields') && updatedRecord.fields['Action Type'] === 'Participate' ? idea.record.fields['Participation Count'] + 1 : idea.record.fields['Participation Count'],
+        'Support Count': updatedRecord &&  updatedRecord.hasOwnProptery('fields') && updatedRecord.fields['Action Type'] !== 'Downvote' ? idea.record.fields['Support Count'] + 1 : idea.record.fields['Support Count'],
       }
     },
     updatedActionRecords: idea.actionRecords.map((actionRec) => {
