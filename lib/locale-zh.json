@@ -3,5 +3,10 @@
     "submitidea": {
       "thankYouMsg": "嘩！好啊！\n有橋出橋💡，有力出力💪！\n💡出橋這裹：https://airtable.com/shrYwXgCML9aN2dI3",
     }
-  }
+  },
+  "greeting": "歡迎你 come 幫！",
+  "unknown": "Sorry, 我唔係好明。",
+  "intro": "你想做咩？\n\n/browseideas - 睇今期 Top Ideas！\n/submitidea - 有 Idea? 出橋啦\n",
+  "helpMsg": "CommBond - Community Bonding.\n一個社區實驗平台，連結社區持份者、同路人共創共享互助生活社區。\n\n你可以透過 CommBond bot /browseideas 瀏覽平台上民間發起的社區 Ideas，然後作出回應或支持。你也可以 /submitidea 出橋上 CommBond 平台，在社區發起實驗，召集同路人用行動支持你的 Idea。\n\n",
+  "contact": "有其他疑問或意見？歡迎聯絡我們的人類：@CommBond\n"
 }
