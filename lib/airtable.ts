@@ -63,14 +63,12 @@ const getUserOrRegister = async ({ user }) => {
     : userRecs[0]
 }
 
-const getUserLastActionRec = async ({ userRecord, actionRecords }) => {
-  const eachAction = await actionRecords.find(async eachAction => {
+const findUserLastAction = async ({ userRecord, actionRecords }) => {
+  return actionRecords.find(eachAction => {
     const userRecIdArr = eachAction.fields['By Users'] || [];
-    if (userRecIdArr.includes(userRecord.id)) {
-      return eachAction
-    }
-  })
-  return eachAction
+    return userRecIdArr.includes(userRecord.id);
+      
+  });
 };
 
 const addUsersOnAction = async ({ selectedActionId, userRecord, existingSupporters }) => {
@@ -85,22 +83,22 @@ const addUsersOnAction = async ({ selectedActionId, userRecord, existingSupporte
   ])
 }
 
-const removeUsersOnAction = async ({ selectedActionId, userRecord, existingSupporters }) => {
-  const index = existingSupporters.indexOf(userRecord.id);
+const unselectAction = async ({ lastSelectedActionRec, userRecord }) => {
+  const supporters = lastSelectedActionRec.fields['By Users'];
+  const index = supporters.indexOf(userRecord.id);
   if (index == -1) return
+  supporters.splice(index, 1);
   return await base('Actions').update([
     {
-      'id': selectedActionId,
+      'id': lastSelectedActionRec.id,
       'fields': {
-        'By Users': [existingSupporters.splice(index, 1)]
+        'By Users': supporters
       }
     },
   ])
 }
 
-
-
-const getActionRecords = async ({ user, selectedActionId }) => {
+const makeAction = async ({ user, selectedActionId }) => {
   // 1. Fetch SelectedAction record 
   const selectedActionRecord = await base('Actions').find(selectedActionId);
   const ideaId = selectedActionRecord.fields['On Idea'][0];
@@ -113,9 +111,10 @@ const getActionRecords = async ({ user, selectedActionId }) => {
   const idea = await getIdea({ id: ideaId })
 
   // 4. Clear any user's previous selection 
-  const lastSelectedAction = await getUserLastActionRec({ userRecord, actionRecords: idea.actionRecords });
+  const lastSelectedAction = await findUserLastAction({ userRecord, actionRecords: idea.actionRecords });
+  // console.log(lastSelectedAction);
   if (lastSelectedAction) {
-    await removeUsersOnAction({ selectedActionId: lastSelectedAction.id, userRecord, existingSupporters: lastSelectedAction.fields['By Users'] })
+    await unselectAction({ lastSelectedActionRec: lastSelectedAction, userRecord });
   }
   // 5. Update Actions with user's newly selected Action
   const updatedRecord = await addUsersOnAction({ selectedActionId, userRecord, existingSupporters })
@@ -124,8 +123,8 @@ const getActionRecords = async ({ user, selectedActionId }) => {
       ...idea.record,
       fields: {
         ...idea.record.fields,
-        'Participation Count': updatedRecord && updatedRecord.hasOwnProptery('fields') && updatedRecord.fields['Action Type'] === 'Participate' ? idea.record.fields['Participation Count'] + 1 : idea.record.fields['Participation Count'],
-        'Support Count': updatedRecord && updatedRecord.hasOwnProptery('fields') && updatedRecord.fields['Action Type'] !== 'Downvote' ? idea.record.fields['Support Count'] + 1 : idea.record.fields['Support Count'],
+        'Participation Count': updatedRecord && updatedRecord.fields && updatedRecord.fields['Action Type'] === 'Participate' ? idea.record.fields['Participation Count'] + 1 : idea.record.fields['Participation Count'],
+        'Support Count': updatedRecord && updatedRecord.fields && updatedRecord.fields['Action Type'] !== 'Downvote' ? idea.record.fields['Support Count'] + 1 : idea.record.fields['Support Count'],
       }
     },
     updatedActionRecords: idea.actionRecords.map((actionRec) => {
@@ -141,5 +140,5 @@ export default {
   base,
   getIdea,
   getAllIdeas,
-  getActionRecords
+  makeAction
 }

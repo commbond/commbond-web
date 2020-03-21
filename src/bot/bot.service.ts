@@ -231,7 +231,7 @@ ${BotService.makeIdeaStatement(ideaRecord.fields)}
 
     ctx.editMessageReplyMarkup(BotService.makeLoadingKeyboard());
 
-    const { updatedIdeaRecord, updatedActionRecords } = await Airtable.getActionRecords({ user, selectedActionId })
+    const { updatedIdeaRecord, updatedActionRecords } = await Airtable.makeAction({ user, selectedActionId })
 
     //6. Update displayed record with newly added count (use editMessage https://core.telegram.org/bots/api#editmessagetext)
     ctx.editMessageText(BotService.makeDetailsPageTextContent(updatedIdeaRecord, updatedActionRecords, selectedActionId), {
