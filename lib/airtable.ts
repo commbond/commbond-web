@@ -7,7 +7,7 @@ const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base('appUW0
 const getIdea = async ({ id }) => {
   try {
     // 1. Find Idea by by ID   
-    const record = await base('Ideas').find(id)
+    const record = await base('Ideas').find(id);
     // 2. Fetch all Actions (with titles and type) of this idea
     const filterStr = record.fields['Actions'].reduce((acc, recID) => {
       return `${acc}RECORD_ID() = '${recID}', `;
@@ -26,7 +26,7 @@ const getIdea = async ({ id }) => {
     console.log(err);
   }
   return {
-    record: [] as any,
+    record: {} as any,
     actionRecords: [] as any,
   }
 }
@@ -60,19 +60,19 @@ const getUserOrRegister = async ({ user }) => {
       "Username": user.username,
       "User Id": String(user.id),
     }, { typecast: true })
-    : userRecs[0]
+    : userRecs[0];
 }
 
 const findUserLastAction = async ({ userRecord, actionRecords }) => {
   return actionRecords.find(eachAction => {
     const userRecIdArr = eachAction.fields['By Users'] || [];
     return userRecIdArr.includes(userRecord.id);
-      
+
   });
 };
 
 const addUsersOnAction = async ({ selectedActionId, userRecord, existingSupporters }) => {
-  if (existingSupporters.includes(userRecord.id)) return
+  if (existingSupporters.includes(userRecord.id)) return;
   return await base('Actions').update([
     {
       'id': selectedActionId,
@@ -95,7 +95,7 @@ const unselectAction = async ({ lastSelectedActionRec, userRecord }) => {
         'By Users': supporters
       }
     },
-  ])
+  ]);
 }
 
 const makeAction = async ({ user, selectedActionId }) => {
@@ -105,10 +105,10 @@ const makeAction = async ({ user, selectedActionId }) => {
   const existingSupporters = selectedActionRecord.fields['By Users'] || [];
 
   // 2. Check if user exists, otherwise registers user
-  const userRecord = await getUserOrRegister({ user })
+  const userRecord = await getUserOrRegister({ user });
 
   // 3. Fetch all sibling Actions 
-  const idea = await getIdea({ id: ideaId })
+  const idea = await getIdea({ id: ideaId });
 
   // 4. Clear any user's previous selection 
   const lastSelectedAction = await findUserLastAction({ userRecord, actionRecords: idea.actionRecords });
@@ -117,14 +117,16 @@ const makeAction = async ({ user, selectedActionId }) => {
     await unselectAction({ lastSelectedActionRec: lastSelectedAction, userRecord });
   }
   // 5. Update Actions with user's newly selected Action
-  const updatedRecord = await addUsersOnAction({ selectedActionId, userRecord, existingSupporters })
+  const updatedRecords = await addUsersOnAction({ selectedActionId, userRecord, existingSupporters });
+  const updatedRecord = updatedRecords.length > 0 ? updatedRecords[0] : [];
+  console.log(updatedRecord);
   return {
     updatedIdeaRecord: {
       ...idea.record,
       fields: {
         ...idea.record.fields,
-        'Participation Count': updatedRecord &&  updatedRecord.hasOwnProptery('fields') && updatedRecord.fields['Action Type'] === 'Participate' ? idea.record.fields['Participation Count'] + 1 : idea.record.fields['Participation Count'],
-        'Support Count': updatedRecord &&  updatedRecord.hasOwnProptery('fields') && updatedRecord.fields['Action Type'] !== 'Downvote' ? idea.record.fields['Support Count'] + 1 : idea.record.fields['Support Count'],
+        'Participation Count': updatedRecord && updatedRecord.fields['Action Type'] === 'Participate' ? idea.record.fields['Participation Count'] + 1 : idea.record.fields['Participation Count'],
+        'Support Count': updatedRecord && updatedRecord.fields['Action Type'] !== 'Downvote' ? idea.record.fields['Support Count'] + 1 : idea.record.fields['Support Count'],
       }
     },
     updatedActionRecords: idea.actionRecords.map((actionRec) => {
@@ -133,7 +135,7 @@ const makeAction = async ({ user, selectedActionId }) => {
       }
       return actionRec;
     })
-  }
+  };
 }
 
 export default {
