@@ -17,6 +17,16 @@ lerna-debug.log*
 /coverage
 /.nyc_output
 
+*~
+*.sw[mnpcod]
+*.log
+*.tmp
+*.tmp.*
+log.txt
+*.sublime-project
+.vscode/
+npm-debug.log*
+
 # IDEs and editors
 /.idea
 .project
@@ -25,6 +35,22 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
+
+.sourcemaps/
+.sass-cache/
+.tmp/
+.versions/
+coverage/
+www/
+dist/
+node_modules/
+tmp/
+temp/
+$RECYCLE.BIN/
+
+.DS_Store
+Thumbs.db
+UserInterfaceState.xcuserstate
 
 # IDE - VSCode
 .vscode/*
