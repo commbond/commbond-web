@@ -8,24 +8,8 @@ import { ContextMessageUpdate } from 'telegraf';
 
 import Airtable from '../../lib/airtable';
 import ZHMsg from '../../lib/locale-zh.json';
-/**
- * Hi developer!
- * 
- * My apology that this is a dirty piece of working prototype written by me who isn't experienced with NodeJS and BE.
- * I believe there are a lot to rewrite and revamp, and here are a few TODOs that I'm aware of:
- * 
- * - separte UI and DB logic into separte lib / modules
- * - use Promise for DB calls?
- * - error handling (no error handling at all in this dirty version)
- * 
- * Feel free to do more to make it better.
- * Thanks for helping to make these codes prettier and more robust!
- * Please remove this message when you are done. 
- * 
- * 
- * /Gigi 
- * github: @ggho
- */
+
+// @future todo: Error handling 
 
 @Injectable()
 export class BotService {
@@ -43,7 +27,7 @@ export class BotService {
 
   //@future Put these UI-relating stuff under a UI module
   protected replyDefaultMenu(ctx: ContextMessageUpdate, isGreeting?: boolean) {
-    const message = `${isGreeting ? ZHMsg.greeting : ZHMsg.unknown} ${ZHMsg.intro}`;
+    const message = `${isGreeting ? ZHMsg.greeting : ZHMsg.unknown} ${ZHMsg.menu}`;
     ctx.reply(BotService.escapeForMarkdownV2(message), {
       parse_mode: 'MarkdownV2',
       reply_markup: BotService.makeMainMenuKeyboard(),
@@ -52,7 +36,7 @@ export class BotService {
   }
 
   protected replyHelpMenu(ctx: ContextMessageUpdate) {
-    const message = `${ZHMsg.helpMsg} ${ZHMsg.intro} ${ZHMsg.contact}`;
+    const message = `${ZHMsg.helpMsg} ${ZHMsg.menu} ${ZHMsg.contact}`;
     ctx.reply(BotService.escapeForMarkdownV2(message), {
       parse_mode: 'MarkdownV2',
       reply_markup: BotService.makeMainMenuKeyboard(),
