@@ -8,6 +8,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "clean": "rm -rf node_modules && yarn && yarn upgrade",
     "start": "node dist/main",
     "dev": "nest start --watch",
     "start:dev": "nest start --watch",
