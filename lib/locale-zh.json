@@ -9,7 +9,5 @@
   "menu": "\n\n你想做咩？\n/browseideas - 睇今期 Top Ideas！\n/submitidea - 有 Idea? 出橋啦\n/help - 唔識用，尋求協助",
   "helpMsg": "CommBond - Community Bonding.\n一個社區實驗平台，連結社區持份者、同路人共創共享互助生活社區。\n\n你可以透過 CommBond bot /browseideas 瀏覽平台上民間發起的社區 Ideas，然後作出回應或支持。你也可以 /submitidea 出橋上 CommBond 平台，在社區發起實驗，召集同路人用行動支持你的 Idea。",
   "contact": "\n\n有其他疑問或意見？歡迎聯絡我們的人類：@CommBond",
-  "ideaListing": {
-
-  }
+  "ideaListing": {}
 }
