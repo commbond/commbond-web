@@ -55,10 +55,12 @@ const getUserOrRegister = async ({ user }) => {
     view: 'Grid view',
     filterByFormula: `{User Id} = '${user.id}'`, //use user id here as username might change
   }).firstPage();
+
   return userRecs.length === 0 ?
     await base('Users').create({
-      "Username": user.username,
+      "Username": user.username || String(user.id),
       "User Id": String(user.id),
+      "Display Name": `${user["first_name"]} ${user["last_name"]}`,
     }, { typecast: true })
     : userRecs[0];
 }
@@ -71,7 +73,7 @@ const findUserLastAction = async ({ userRecord, actionRecords }) => {
   });
 };
 
-const addUsersOnAction = async ({ selectedActionId, userRecord, existingSupporters }) => {
+const selectAction = async ({ selectedActionId, userRecord, existingSupporters }) => {
   if (existingSupporters.includes(userRecord.id)) return;
   return await base('Actions').update([
     {
@@ -113,13 +115,14 @@ const makeAction = async ({ user, selectedActionId }) => {
   // 4. Clear any user's previous selection 
   const lastSelectedAction = await findUserLastAction({ userRecord, actionRecords: idea.actionRecords });
   // console.log(lastSelectedAction);
+  //@todo: handle selectedActionRecord = lastSelectedAction
   if (lastSelectedAction) {
     await unselectAction({ lastSelectedActionRec: lastSelectedAction, userRecord });
   }
   // 5. Update Actions with user's newly selected Action
-  const updatedRecords = await addUsersOnAction({ selectedActionId, userRecord, existingSupporters });
-  const updatedRecord = updatedRecords.length > 0 ? updatedRecords[0] : [];
-  console.log(updatedRecord);
+  const updatedRecords = await selectAction({ selectedActionId, userRecord, existingSupporters });
+  const updatedRecord = updatedRecords && updatedRecords.length > 0 ? updatedRecords[0] : null;
+  
   return {
     updatedIdeaRecord: {
       ...idea.record,
@@ -134,7 +137,9 @@ const makeAction = async ({ user, selectedActionId }) => {
         return updatedRecord;
       }
       return actionRec;
-    })
+    }),
+    updatedRecord,
+    userRecord
   };
 }
 
@@ -142,5 +147,6 @@ export default {
   base,
   getIdea,
   getAllIdeas,
-  makeAction
+  getUserOrRegister,
+  makeAction,
 }
