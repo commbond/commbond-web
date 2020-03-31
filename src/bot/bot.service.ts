@@ -83,7 +83,7 @@ ${strRecords}想參與或支持？點擊以下的連結查看更多。
 
   static makeMainMenuKeyboard(prepend?) {
     const keyboard = [
-      ...prepend,
+      // prepend && ...prepend,
       [{
         text: '睇今期 Top Ideas！',
         callback_data: '/browseideas',
@@ -241,9 +241,9 @@ ${BotService.makeIdeaStatement(ideaRecord.fields)}`
       parse_mode: 'MarkdownV2',
       disable_web_page_preview: true,
       reply_markup: BotService.makeMainMenuKeyboard([[{
-        text: updatedRecord.fields['Action Type'] === 'Conditionally participate' ? '參與條件是⋯' 
+        text: updatedRecord && updatedRecord.fields['Action Type'] === 'Conditionally participate' ? '參與條件是⋯' 
           :
-          (updatedRecord.fields['Action Type'] === 'Downvote' ? '不支持原因是⋯'
+          (updatedRecord && updatedRecord.fields['Action Type'] === 'Downvote' ? '不支持原因是⋯'
             : 
             '提交問題或意見'),
         url: `https://airtable.com/shrvE6uhIe32ydaz9?prefill_By+User=${userRecord.id}&prefill_With+Action=${selectedActionId}`,
