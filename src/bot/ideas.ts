@@ -1,6 +1,6 @@
 import { ContextMessageUpdate } from 'telegraf';
 import Airtable from '../../lib/airtable';
-import { escapeForMarkdownV2, makeMainMenuReplyMarkup, makeLoadingReplyMarkup, sendMessage } from '../../lib/utils';
+import { escapeForMarkdownV2, makeMainMenuReplyMarkup, makeLoadingReplyMarkup, sendMessage, editMessage } from '../../lib/utils';
 
 async function HandleBrowseIdeas(ctx: ContextMessageUpdate) {
   const { records } = await Airtable.getAllIdeas();
@@ -26,23 +26,25 @@ async function HandleRespondIdea(ctx: ContextMessageUpdate) {
   // console.log(ctx.update.callback_query);
   const user = ctx.update.callback_query.from;
 
-  ctx.editMessageReplyMarkup(makeLoadingReplyMarkup());
+  await ctx.editMessageReplyMarkup(makeLoadingReplyMarkup());
 
-  const { updatedIdeaRecord, updatedActionRecords, updatedRecord, userRecord } = await Airtable.makeAction({ user, selectedActionId })
+  const { updatedIdeaRecord, updatedActionRecords, updatedRecord, userRecord } = await Airtable.makeAction({ user, selectedActionId });
+  const replyMakeupPrepend = [{
+    text: updatedRecord && updatedRecord.fields['Action Type'] === 'Conditionally participate' ? '參與條件是⋯'
+      :
+      (
+        updatedRecord && updatedRecord.fields['Action Type'] === 'Downvote' ? '不支持原因是⋯'
+          :
+          '提交問題或意見'
+      ),
+    url: `https://airtable.com/shrvE6uhIe32ydaz9?prefill_By+User=${userRecord.id}&prefill_With+Action=${selectedActionId}`,
+  }];
 
   //6. Update displayed record with newly added count (use editMessage https://core.telegram.org/bots/api#editmessagetext)
-  ctx.editMessageText(makeDetailsPageTextContent(updatedIdeaRecord, updatedActionRecords, selectedActionId, userRecord), {
-    parse_mode: 'MarkdownV2',
-    disable_web_page_preview: true,
-    reply_markup: makeMainMenuReplyMarkup([[{
-      text: updatedRecord && updatedRecord.fields['Action Type'] === 'Conditionally participate' ? '參與條件是⋯'
-        :
-        (updatedRecord && updatedRecord.fields['Action Type'] === 'Downvote' ? '不支持原因是⋯'
-          :
-          '提交問題或意見'),
-      url: `https://airtable.com/shrvE6uhIe32ydaz9?prefill_By+User=${userRecord.id}&prefill_With+Action=${selectedActionId}`,
-    }]]),
-  });
+  await editMessage(ctx,
+    makeDetailsPageTextContent(updatedIdeaRecord, updatedActionRecords, selectedActionId, userRecord),
+    makeMainMenuReplyMarkup(replyMakeupPrepend)
+  );
 }
 
 
@@ -128,8 +130,8 @@ ${makeIdeaStatement(ideaRecord.fields)}`
             :
             '多謝回應！不支持原因是？請填form: ')
     + '\*'
-    + (selectedActionType ? escapeForMarkdownV2(`https://airtable.com/shrvE6uhIe32ydaz9?prefill_By+User=${userRecord.id}&prefill_With+Action=${selectedActionId}`) : '')
-    + (selectedActionType === 'Conditionally participate' ? '（如果詳情有改，我們會通知你）' : '')
+    + (selectedActionType ? escapeForMarkdownV2(`https://airtable.com/shrvE6uhIe32ydaz9?prefill_By+User=${userRecord.id}&prefill_With+Action=${selectedActionId} `) : '')
+    + (selectedActionType === 'Conditionally participate' ? '\n（如果詳情有改，我們會通知你）' : '')
     ;
 
 

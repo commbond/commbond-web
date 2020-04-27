@@ -18,9 +18,21 @@ async function sendMessage(ctx: ContextMessageUpdate, textContent: string, reply
 
 }
 
+async function editMessage(ctx: ContextMessageUpdate, textContent: string, replyMarkup: any) {
+  await ctx.editMessageText(textContent, {
+    parse_mode: 'MarkdownV2',
+    disable_web_page_preview: true,
+    reply_markup: replyMarkup,
+  });
+
+  ctx.updateType === 'callback_query' && await ctx.answerCbQuery();
+
+}
+
 function makeMainMenuReplyMarkup(prepend?) {
-  const keyboard = [
-    // prepend && ...prepend,
+
+  const prependKeyboard = prepend ? [prepend] : [];
+  const keyboard = prependKeyboard.concat([
     [{
       text: '睇今期 Top Ideas！',
       callback_data: 'BROWSE_IDEAS',
@@ -29,7 +41,8 @@ function makeMainMenuReplyMarkup(prepend?) {
       text: '有 Idea? 出橋啦',
       callback_data: 'SUBMIT_IDEA',
     }],
-  ];
+  ]);
+
   return { inline_keyboard: keyboard };
 }
 
@@ -44,6 +57,7 @@ function makeLoadingReplyMarkup() {
 export {
   escapeForMarkdownV2,
   sendMessage,
+  editMessage,
   makeMainMenuReplyMarkup,
   makeLoadingReplyMarkup,
 }
