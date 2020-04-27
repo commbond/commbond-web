@@ -24,9 +24,15 @@ export class BotService {
   async HandleStart(ctx: ContextMessageUpdate) {
     // const me = await this.telegrafTelegramService.getMe();
 
-    console.log(ctx.message);
+    const commandParts = ctx.message.text.split(' ');
+    if (commandParts.length > 1) {
+      //has Deep linking
+      const ideaId = commandParts[1];
+      await Ideas.HandleGetIdea(ctx, ideaId);
+    } else {
+      await this.ReplyDefaultMenu(ctx, `${ZHMsg.greeting} ${ZHMsg.menu}`);
+    }
 
-    await this.ReplyDefaultMenu(ctx, `${ZHMsg.greeting} ${ZHMsg.menu}`);
   }
 
   @TelegramActionHandler({ action: /^BROWSE_IDEAS/ })
@@ -36,7 +42,9 @@ export class BotService {
 
   @TelegramActionHandler({ action: /^GET_IDEA/ })
   protected async HandleGetIdea(ctx: ContextMessageUpdate) {
-    await Ideas.HandleGetIdea(ctx);
+    const parts = ctx.update.callback_query.data.split(' ');
+    const ideaId = parts.length > 1 ? parts[1] : null;
+    await Ideas.HandleGetIdea(ctx, ideaId);
   }
 
   @TelegramActionHandler({ action: /^RESPOND_IDEA/ })
@@ -59,7 +67,6 @@ export class BotService {
         await this.HandleBrowseIdeas(ctx);
         break;
       case '/submit_idea':
-      case '/submit_ideas':
         await this.HandleSubmitIdea(ctx);
         break;
       case '/help':

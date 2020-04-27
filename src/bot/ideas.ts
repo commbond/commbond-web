@@ -8,9 +8,7 @@ async function HandleBrowseIdeas(ctx: ContextMessageUpdate) {
   await sendMessage(ctx, makeListingPageTextContent(records), makeListingPageKeyboard(records));
 }
 
-async function HandleGetIdea(ctx: ContextMessageUpdate) {
-  const parts = ctx.update.callback_query.data.split(' ');
-  const ideaId = parts.length > 1 ? parts[1] : null;
+async function HandleGetIdea(ctx: ContextMessageUpdate, ideaId: string) {
   console.log('GET_IDEA with ID: ' + ideaId);
 
   // return idea record and action records 
@@ -69,7 +67,7 @@ ${makeIdeaStatement(record.fields)}
 ${strRecords}想參與或支持？點擊以下的連結查看更多。
 
 你有 idea? 
-/submitidea － 出橋啦！
+/submit\\_idea － 出橋啦！
 `;
 
   return fullMessage;
