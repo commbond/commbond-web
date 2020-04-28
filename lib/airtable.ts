@@ -60,7 +60,7 @@ const getUserOrRegister = async ({ user }) => {
     await base('Users').create({
       "Username": user.username || String(user.id),
       "User Id": String(user.id),
-      "Display Name": `${user["first_name"]} ${user["last_name"]}`,
+      "Display Name": `${user["first_name"] ? user["first_name"] : ''} ${user["last_name"] ? user["last_name"] : ''}`,
     }, { typecast: true })
     : userRecs[0];
 }
@@ -122,7 +122,7 @@ const makeAction = async ({ user, selectedActionId }) => {
   // 5. Update Actions with user's newly selected Action
   const updatedRecords = await selectAction({ selectedActionId, userRecord, existingSupporters });
   const updatedRecord = updatedRecords && updatedRecords.length > 0 ? updatedRecords[0] : null;
-  
+
   return {
     updatedIdeaRecord: {
       ...idea.record,
