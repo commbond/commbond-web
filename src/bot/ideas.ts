@@ -12,10 +12,14 @@ async function HandleGetIdea(ctx: ContextMessageUpdate, ideaId: string) {
   console.log('GET_IDEA with ID: ' + ideaId);
 
   // return idea record and action records 
-  const result = await Airtable.getIdea({ id: ideaId });
+  try {
+    const result = await Airtable.getIdea({ id: ideaId });
 
-  //@todo, add param lastSelectedActionId
-  await sendMessage(ctx, makeDetailsPageTextContent(result.record, result.actionRecords), makeDetailsPageKeyboard(result.actionRecords));
+    //@todo, add param lastSelectedActionId
+    await sendMessage(ctx, makeDetailsPageTextContent(result.record, result.actionRecords), makeDetailsPageKeyboard(result.actionRecords));
+  } catch (err) {
+    throw err;
+  }
 }
 
 async function HandleRespondIdea(ctx: ContextMessageUpdate) {

@@ -24,11 +24,12 @@ const getIdea = async ({ id }) => {
     }
   } catch (err) {
     console.log(err);
+    throw err;
   }
-  return {
-    record: {} as any,
-    actionRecords: [] as any,
-  }
+  // return {
+  //   record: {} as any,
+  //   actionRecords: [] as any,
+  // }
 }
 
 const getAllIdeas = async () => {

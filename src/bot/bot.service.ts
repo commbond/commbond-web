@@ -28,7 +28,13 @@ export class BotService {
     if (commandParts.length > 1) {
       //has Deep linking
       const ideaId = commandParts[1];
-      await Ideas.HandleGetIdea(ctx, ideaId);
+      try {
+        await Ideas.HandleGetIdea(ctx, ideaId);
+      } catch (err) {
+        //Couldn't GetIdea by REC_ID, return default menu
+        await this.ReplyDefaultMenu(ctx, `${ZHMsg.greeting} ${ZHMsg.menu}`);
+      }
+
     } else {
       await this.ReplyDefaultMenu(ctx, `${ZHMsg.greeting} ${ZHMsg.menu}`);
     }
