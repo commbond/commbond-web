@@ -1,6 +1,6 @@
 
 ## Description
-CommBond web using 
+CommBond web uses 
 - [Nest](https://github.com/nestjs/nest) as an API framework (TypeScript/ NodeJs starter repository)
 - Using [NestJs-Telegraf](https://www.npmjs.com/package/nestjs-telegraf) as a premade Telegram module on NestJS. 
 
