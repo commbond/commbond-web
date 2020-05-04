@@ -19,6 +19,7 @@ $ yarn install
 
 ```bash
 # development
+# (you will need tokens and keys in your .env to run it locally, ask any existing developers for these keys)
 $ npm run start
 
 # watch mode
