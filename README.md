@@ -9,37 +9,34 @@ See more at [Wiki](https://github.com/commbond/commbond-web/wiki) page.
 ## Installation
 
 ```bash
-$ npm install
-
-#or use yarn, also for any npm commands below
 $ yarn install
 ```
 
 ## Running the app
 
 ```bash
-# development
+# development with watch mode
 # (you will need tokens and keys in your .env to run it locally, ask any existing developers for these keys)
-$ npm run start
+$ yarn start:dev
 
-# watch mode
-$ npm run start:dev
+# development
+$ yarn start
 
 # production mode
-$ npm run start:prod
+$ yarn start:prod
 ```
 
 ## Test
 
 ```bash
 # unit tests
-$ npm run test
+$ yarn test
 
 # e2e tests
-$ npm run test:e2e
+$ yarn test:e2e
 
 # test coverage
-$ npm run test:cov
+$ yarn test:cov
 ```
 
 ## To contribute
